@@ -22,11 +22,9 @@ class CustomerForm extends Component {
     }
 
     componentDidMount() {
-        const { id } = this.props.params; // Get the route parameter
+        const { id } = this.props.params; 
         console.log(id);
         if (id) {
-            // If an ID is present, fetch customer data for editing
-            // route in our Flask app for accessing the data from an associated customer id
             this.fetchCustomerData(id);
         }
     }

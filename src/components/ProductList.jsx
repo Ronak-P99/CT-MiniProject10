@@ -1,51 +1,72 @@
-import { number } from 'prop-types';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Component } from "react";
+import { func } from 'prop-types';
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { Button, Alert, Container, ListGroup } from "react-bootstrap";
 
-const ProductList = ({ orderId }) => {
-    const [products, setProducts] = useState([]);
-//          [{ id: 'A123', name: 'Coffee' }, { id: 'B456', name: 'Croissant' }]
-    useEffect(() => {
-        // if (orderId) {
-        //     // Make an api call to get all of our products asscociated with our order id
-        //     const fetchedProducts = [
-        //         { id: 'A123', name: 'Coffee' },
-        //         { id: 'B456', name: 'Croissant' },
-        //     ];
-        //     // Set our products array to be equal to our fetched products
-        //     setProducts(fetchedProducts);
-        // }
 
-        const fetchProducts = async () => {
-            try {
-                const response = await axios.get('http://127.0.0.1:5000/products');
-                setProducts(response.data);
-            } catch (error) {
-                console.error('Error fetching products', error)
-            }
-        }
+class ProductList extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+          products: [],
+          selectedProductId: null,
+          error: null
+        };
+    }
 
-        if (orderId) {
-            fetchProducts()
-        }
-    }, [orderId]);
+    componentDidMount() {
+        this.fetchProducts();
+    }
 
-    return (
-        <div className='product-list'>
-            <h3>Products</h3>
-            <ul>
-                {products.map(product => (
-                    <li key={product.id}>
-                        {product.name} (ID: {product.id})
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-};
+    fetchProducts = () => {
+        axios.get('http://127.0.0.1:5000/products')
+        .then(response => {
+            this.setState({ products: response.data });
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            this.setState({ error: `Error fetching products. Please try again later.` })
+        });
+    }
 
-ProductList.protoTypes = {
-    orderId: number
+    selectProducts = (id) => {
+        this.setState({ selectedProductId: id });
+        this.props.onProductSelect(id);
+    }
+
+    deleteProducts = (productId) => {
+        axios.delete(`http://127.0.0.1:5000/products/${productId}`)
+            .then(() => {
+                this.fetchProducts();
+            })
+            .catch(error => {
+                console.error('Error deleting products:', error);
+                this.setState({ error: `Error deleting product. Please try again.` })
+            });
+    }
+
+    render() {
+        const { products, error } = this.state;
+
+        return (
+            <Container>
+                {error && <Alert variant="danger">{error}</Alert>}
+                <h3 className="mt-3 mb-3 text-center">Products</h3>
+                <ListGroup>
+                    {products.map(product => (
+                        <ListGroup.Item key={product.id} className="d-flex justify-content-between align-items-center shadow-sm p-3 mb-3 bg-white rounded">
+                            <Link to={`/edit-product/${product.id}`} className="text-primary">{product.name}</Link>
+                            <Button variant="danger" size="sm" onClick={() => this.deleteProduct(product.id)}>Delete</Button>
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
+            </Container>
+        )
+    }
+}
+ProductList.propTypes = {
+    onProductSelect: func
 }
 
 export default ProductList;
