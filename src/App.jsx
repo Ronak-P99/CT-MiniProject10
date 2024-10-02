@@ -12,9 +12,14 @@ import './AppStyles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
 
-
-function App(){
+function App() {
     const [customerID, setCustomerID] = useState(null);
+
+    
+    const handleCustomerSelect = (id) => {
+        setCustomerID(id);
+    };
+
     return (
       <div className='app-container'>
         <NavigationBar />
@@ -22,7 +27,7 @@ function App(){
            <Route path='/' element={<HomePage />} />
            <Route path='/add-customer' element={<CustomerFormWrapper />} />
            <Route path='/edit-customer/:id' element={<CustomerFormWrapper />} />
-           <Route path='/customers' element={<CustomerList />} />
+           <Route path='/customers' element={<CustomerList onSelectCustomer={handleCustomerSelect} />} />
            <Route path='/add-product' element={<ProductFormWrapper />} />
            <Route path='/edit-product/:id' element={<ProductFormWrapper />} />
            <Route path='/products' element={<ProductList />} />
@@ -33,7 +38,6 @@ function App(){
         </Routes>
       </div>
     );
-  }
-
+}
 
 export default App;

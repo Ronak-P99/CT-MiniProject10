@@ -1,11 +1,7 @@
 import { Component } from "react";
 import axios from 'axios';
-import { func, number } from 'prop-types';
-import { Form, Button, Alert, Container, Modal } from "react-bootstrap";
-
-// Controlled Components
-// When React (via state) controls the value of an input for example
-// useful for statemanagement, form validation, "source of truth" i.e. state will always be up to date with current value. UI will always be updated
+import { func, string } from 'prop-types';
+import { Form, Button, Alert, Container, Modal, Spinner } from "react-bootstrap";
 
 class CustomerForm extends Component {
     constructor(props) {
@@ -17,13 +13,13 @@ class CustomerForm extends Component {
             errors: {},
             selectedCustomerId: null,
             isLoading: false,
-            showSuccessModal: false
+            showSuccessModal: false,
+            error: null
         };
     }
 
     componentDidMount() {
         const { id } = this.props.params; 
-        console.log(id);
         if (id) {
             this.fetchCustomerData(id);
         }
@@ -31,39 +27,26 @@ class CustomerForm extends Component {
 
     fetchCustomerData = (id) => {
         axios.get(`http://127.0.0.1:5000/customers/${id}`)
-        .then(response => {
-            const customerData = response.data;
-            this.setState({
-                name: customerData.name,
-                email: customerData.email,
-                phone: customerData.phone,
-                selectedCustomerId: id
-            });
-        })
+            .then(response => {
+                const { name, email, phone } = response.data;
+                this.setState({
+                    name,
+                    email,
+                    phone,
+                    selectedCustomerId: id
+                });
+            })
             .catch(error => {
-                console.error('Error fetching customer data:', error)
-        });
-        
+                console.error('Error fetching customer data:', error);
+                this.setState({ error: 'Failed to fetch customer data' });
+            });
     };
 
     componentDidUpdate(prevProps) {
         if (prevProps.customerId !== this.props.customerId) {
             this.setState({ selectedCustomerId: this.props.customerId });
-            
             if (this.props.customerId) {
-                axios.get(`http://127.0.0.1:5000/customers/${this.props.customerId}`)
-                    .then(response => {
-                        const customerData = response.data;
-                        this.setState({
-                            name: customerData.name,
-                            email: customerData.email,
-                            phone: customerData.phone
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching customer data:', error);
-                        // Handle errors here
-                    });
+                this.fetchCustomerData(this.props.customerId);
             } else {
                 this.setState({
                     name: '',
@@ -91,22 +74,18 @@ class CustomerForm extends Component {
     handleSubmit = (event) => {
         event.preventDefault();
         const errors = this.validateForm();
-        if(Object.keys(errors).length === 0) {
-            this.setState({ isLoading: true, error: null })
-            const customerData = {
-                name: this.state.name.trim(),
-                email: this.state.email.trim(),
-                phone: this.state.phone.trim()
-            };
-            const apiUrl = this.state.selectedCustomerId
-            ? `http://127.0.0.1:5000/customers/${this.state.selectedCustomerId}`
-            : 'http://127.0.0.1:5000/customers';
+        if (Object.keys(errors).length === 0) {
+            this.setState({ isLoading: true, error: null });
+            const { name, email, phone, selectedCustomerId } = this.state;
+            const customerData = { name: name.trim(), email: email.trim(), phone: phone.trim() };
+            const apiUrl = selectedCustomerId
+                ? `http://127.0.0.1:5000/customers/${selectedCustomerId}`
+                : 'http://127.0.0.1:5000/customers';
 
-            const httpMethod = this.state.selectedCustomerId ? axios.put : axios.post;
+            const httpMethod = selectedCustomerId ? axios.put : axios.post;
 
             httpMethod(apiUrl, customerData)
                 .then(() => {
-
                     this.setState({
                         name: '',
                         email: '',
@@ -123,7 +102,6 @@ class CustomerForm extends Component {
         } else {
             this.setState({ errors });
         }
-        
     };
 
     closeModal = () => {
@@ -135,7 +113,7 @@ class CustomerForm extends Component {
             errors: {},
             selectedCustomerId: null
         });
-        this.props.navigate('/customers')
+        this.props.navigate('/customers');
     }
 
     render() {
@@ -143,25 +121,27 @@ class CustomerForm extends Component {
 
         return (
             <Container>
-                { isLoading && <Alert variant="info">Submitting customer data...</Alert>}
-                { error && <Alert variant="danger">Error submitting customer data: {error}</Alert>}
+                {isLoading && <Alert variant="info">Submitting customer data...</Alert>}
+                {error && <Alert variant="danger">Error submitting customer data: {error}</Alert>}
                 <Form onSubmit={this.handleSubmit}>
-                    <Form.Group controlId="formGroupName" >
+                    <Form.Group controlId="formGroupName">
                         <Form.Label>Name</Form.Label>
                         <Form.Control type="text" name="name" value={name} onChange={this.handleChange} />
-                        {errors.name && <div style={{color: 'red'}}>{errors.name}</div>}
+                        {errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
                     </Form.Group>
-                    <Form.Group controlId="formGroupEmail" >
+                    <Form.Group controlId="formGroupEmail">
                         <Form.Label>Email</Form.Label>
                         <Form.Control type="text" name="email" value={email} onChange={this.handleChange} />
-                        {errors.email && <div style={{color: 'red'}}>{errors.email}</div>}
+                        {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
                     </Form.Group>
-                    <Form.Group controlId="formGroupPhone" >
+                    <Form.Group controlId="formGroupPhone">
                         <Form.Label>Phone</Form.Label>
                         <Form.Control type="tel" name="phone" value={phone} onChange={this.handleChange} />
-                        {errors.phone && <div style={{color: 'red'}}>{errors.phone}</div>}
+                        {errors.phone && <div style={{ color: 'red' }}>{errors.phone}</div>}
                     </Form.Group>
-                    <Button variant="primary" type="submit" >Submit</Button>
+                    <Button variant="primary" type="submit" disabled={isLoading}>
+                        {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : 'Submit'}
+                    </Button>
                 </Form>
 
                 <Modal show={showSuccessModal} onHide={this.closeModal}>
@@ -179,9 +159,10 @@ class CustomerForm extends Component {
         );
     }
 }
-CustomerForm.protoTypes = {
-    customerId: number,
+
+CustomerForm.propTypes = {
+    customerId: string,
     onUpdateCustomerList: func,
-}
+};
 
 export default CustomerForm;
