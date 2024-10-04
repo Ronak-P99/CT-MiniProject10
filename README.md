@@ -5,3 +5,6 @@ To successfully build our e-commerce application and achieve the learning object
 
 Function:
 Once you pull up the browser, you will be welcomed with a homepage. Next, you can choose whichever navigation tab you want to move to and follow the instructions/review whatever is on the screen. Some tabs with the word "add" on the navigation bar allow you to create a new product/customer/order. Have fun messing around with my work!
+
+Link to Module 6 Flask Project:
+https://github.com/Ronak-P99/CT-MiniProject10-Flask
