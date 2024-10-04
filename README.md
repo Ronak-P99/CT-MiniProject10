@@ -1,8 +1,7 @@
-# React + Vite
+# Mini-Project: E-commerce API
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Project Requirements:
+To successfully build our e-commerce application and achieve the learning objectives, we need to establish clear project requirements. These requirements outline the key features and functionalities that our application must encompass. Below, you'll find a comprehensive list of project requirements based on our learning objectives:
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Function:
+Once you pull up the browser, you will be welcomed with a homepage. Next, you can choose whichever navigation tab you want to move to and follow the instructions/review whatever is on the screen. Some tabs with the word "add" on the navigation bar allow you to create a new product/customer/order. Have fun messing around with my work!
