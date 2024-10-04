@@ -9,7 +9,6 @@ class OrderList extends Component {
         super(props);
         this.state = {
             orders: [],
-            customerID: this.props.customerID || '',
             selectedOrderId: null,
             error: null
         };
@@ -56,7 +55,7 @@ class OrderList extends Component {
                 <ListGroup>
                     {orders.map(order => (
                         <ListGroup.Item key={order.id} className="d-flex justify-content-between align-items-center shadow-sm p-3 mb-3 bg-white rounded">
-                            <Link to={`/edit-order/${order.id}`} className="text-primary">{order.name}</Link>
+                            <Link to={`/edit-order/${order.id}`} className="text-primary">Customer ID: {order.customer_id} ~ Product ID: {order.product_id} ~ Order placed: {order.date}</Link>
                             <Button variant="danger" size="sm" onClick={() => this.deleteOrder(order.id)}>Delete</Button>
                         </ListGroup.Item>
                     ))}
@@ -68,7 +67,6 @@ class OrderList extends Component {
 
 OrderList.propTypes = {
     onOrderSelect: func,
-    customerID: func // Optionally define the type of customerID
 }
 
 export default OrderList;
