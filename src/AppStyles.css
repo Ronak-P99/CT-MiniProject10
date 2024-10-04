@@ -11,7 +11,12 @@ body {
 h3 {
   margin: 0 0 10px 0;
 }
-
+button {
+  background-color: darkgrey;
+}
+button:active {
+  background-color: lightgray;
+}
 ul {
   list-style-type: none;
   padding: 0;

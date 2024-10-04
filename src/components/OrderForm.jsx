@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { func, number } from "prop-types";
-import { Form, Button, Alert, Container, Modal } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { number } from "prop-types";
+import { Form, Button, Alert, Container, Modal, ListGroup } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
-const OrderForm = ({ customerID }) => {
-    const { id } = useParams(); // Use the useParams hook to get the ID from the URL
+const OrderForm = () => {
     const navigate = useNavigate();
     const [date, setDate] = useState('');
     const [errors, setErrors] = useState({});
@@ -13,24 +12,47 @@ const OrderForm = ({ customerID }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [error, setError] = useState(null);
+    const [customers, setCustomers] = useState([]);
+    const [customerId, setCustomerId] = useState(null);
+    const [products, setProducts] = useState([]);
+    const [productId, setProductId] = useState(null);
+
+    const handleClickProduct = (id) => {
+        setProductId(id);
+    
+    };
+
+    const handleClickCustomer = (id) => {
+        setCustomerId(id);
+    };
 
     useEffect(() => {
-        if (id) {
-            fetchOrderData(id);
-        }
-    }, [id]);
+       fetchCustomers()
+    }, []);
 
-    const fetchOrderData = (orderId) => {
-        axios.get(`http://127.0.0.1:5000/orders/${orderId}`)
-            .then(response => {
-                const orderData = response.data;
-                setDate(orderData.date);
-                setSelectedOrderId(orderId);
-            })
-            .catch(error => {
-                console.error('Error fetching order data:', error);
-            });
-    };
+    useEffect(() => {
+        fetchProducts()
+     }, []);
+
+    const fetchProducts = () => {
+        axios.get('http://127.0.0.1:5000/products')
+        .then(response => {
+            setProducts(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+    }
+
+    const fetchCustomers = () => {
+        axios.get('http://127.0.0.1:5000/customers')
+        .then(response => {
+            setCustomers(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+    }
 
     const validateForm = () => {
         const errors = {};
@@ -45,7 +67,8 @@ const OrderForm = ({ customerID }) => {
             setIsLoading(true);
             const orderData = {
                 date: date.trim(),
-                customerID: customerID,
+                customer_id: customerId.toString(),
+                product_id: productId.toString(),
             };
             const apiUrl = selectedOrderId
                 ? `http://127.0.0.1:5000/orders/${selectedOrderId}`
@@ -82,6 +105,29 @@ const OrderForm = ({ customerID }) => {
         <Container>
             {isLoading && <Alert variant="info">Submitting order data...</Alert>}
             {error && <Alert variant="danger">Error submitting order data: {error}</Alert>}
+            {
+                customers && <ListGroup>
+                <h1>Select a Customer:</h1>
+                {customers.map(customer => (
+                    <ListGroup.Item key={customer.id} className="d-flex justify-content-between align-items-center shadow-sm p-3 mb-3 bg-white rounded">
+                        <p className="text-primary">{customer.name}</p>
+                        <Button key={customer.id} size="sm" onClick={() => handleClickCustomer(customer.id)} 
+                        style={{ backgroundColor: customerId === customer.id ? 'darkgray' : 'lightgray', }} > Select </Button>                    </ListGroup.Item>
+                ))}
+            </ListGroup>
+            }
+            {   
+                products && <ListGroup>
+                <h1>Select a Product:</h1>
+                {products.map(product => (
+                    <ListGroup.Item key={product.id} className="d-flex justify-content-between align-items-center shadow-sm p-3 mb-3 bg-white rounded">
+                        <p className="text-primary">{product.name}</p>
+                        <Button key={product.id} size="sm" onClick={() => handleClickProduct(product.id)} 
+                        style={{ backgroundColor: productId === product.id ? 'darkgray' : 'lightgray', }} > Select </Button>
+                    </ListGroup.Item>
+                ))}
+            </ListGroup>
+            }
             <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="formGroupDate">
                     <Form.Label>Date</Form.Label>
@@ -108,10 +154,6 @@ const OrderForm = ({ customerID }) => {
             </Modal>
         </Container>
     );
-}
-
-OrderForm.propTypes = {
-    customerID: number.isRequired,
 }
 
 export default OrderForm;
